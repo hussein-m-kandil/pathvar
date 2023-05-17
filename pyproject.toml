@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build-meta"
+
+[project]
+name = "pathvar"
+version = "0.1.0"
+requires-python = ">=3.10"
+
+[project.scripts]
+pathvar = "pathvar.project:main"
+
+# Explicit identification of the project's packages directory
+[tool.setuptools.packages.find]
+where = ["src"]
