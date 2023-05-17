@@ -1,2 +1,4 @@
-src/pathvar/old*
+old*
 .venv
+.vscode
+__pycache__
