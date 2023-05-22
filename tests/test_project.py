@@ -6,9 +6,9 @@ out = "/home/hussein/.cache/activestate/bin:/home/hussein/.local/ActiveState/Sta
 
 
 def test_str_duplicates_elimination():
-    assert str_duplicates_elimination(
+    assert path_duplicates_eliminator(
         "x:x:y:y:z:z:xy:xz:yz:xyz:X:Y:Z:XY:XZ:YZ:XYZ:X:Y:Z"
     ) == "x:y:z:xy:xz:yz:xyz:X:Y:Z:XY:XZ:YZ:XYZ"
-    assert str_duplicates_elimination(inp) == out
-    assert str_duplicates_elimination(out) == out
-    assert str_duplicates_elimination('') == ''
+    assert path_duplicates_eliminator(inp) == out
+    assert path_duplicates_eliminator(out) == out
+    assert path_duplicates_eliminator('') == ''
