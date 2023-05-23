@@ -2,3 +2,7 @@ old*
 .venv
 .vscode
 __pycache__
+*_cache*
+dist
+*.egg*
+tests
