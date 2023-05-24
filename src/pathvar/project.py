@@ -1,10 +1,11 @@
+from sys import exit
 import os
+from subprocess import run, PIPE
 from argparse import ArgumentParser, Namespace
 
-# TODO: Delete the following constants if there is no need to them
 HOME_PATH: str = os.path.normpath(os.path.expanduser('~'))
-TEMP_PATH: str = os.path.join(HOME_PATH, "__TEMP_current_path_var__.txt")
-
+USER_BASH_PROFILE_PATH: str = os.path.join(HOME_PATH, ".bash_profile")
+PATH_SEP = os.pathsep
 FOUND_MSG = "The given path is FOUND in PATH environment variable."
 NOT_FOUND_MSG = "The given path is NOT FOUND in PATH environment variable."
 BOLD_STYLE = "\033[1m"
@@ -15,39 +16,201 @@ END_STYLE = "\033[0m"
 
 
 def main() -> None:
-    # Place holder for the current path
-    current_path_value: str = os.environ["PATH"]
+
+    # Get PATH
+    old_path_value: str = get_path()
+    if old_path_value == "__%NO_PATH%__":
+        exit("Failure: Couldn't get PATH variable")
+
+    """ # Try to get the PATH in place holder for the current path
+    try:
+        old_path_value: str = os.environ["PATH"]
+    except KeyError:
+        print('\n' + BOLD_STYLE + RED_STYLE +
+              "PATH variable is not exist!" + END_STYLE)
+        while True:
+            ans = input("Do you want to set a new PATH variable [y|n]? ")
+            if ans.strip().lower() in ('y', "yes"):
+                os.environ.setdefault("PATH", '')
+                old_path_value: str = os.environ["PATH"]
+                print('\n' + BOLD_STYLE + GREEN_STYLE +
+                      "New PATH variable is available." + END_STYLE)
+                print('\n' + BOLD_STYLE +
+                      "Use -a or -p to insert new paths." + END_STYLE)
+                break
+            elif ans.strip().lower() in ('n', "no"):
+                exit() """
 
     # Create argument parser
     parser: ArgumentParser = ArgumentParser(
-        description="This tool meant to facilitate the interaction \
+        description=f"This tool meant to facilitate the interaction \
                 with the system's PATH environment variable. \
                     To get the work done correctly do the following: \
                         Read the 'help' instruction well, \n\
                         Be careful about the paths you input (with some options), \n\
-                        and Separate between multiple paths with a single ':'. \
+                        and Separate between multiple paths with a single '{PATH_SEP}'. \
                         Copyright (c) 2023 Hussein Mahmoud Kandil - MIT."
     )
     # Add arguments to the ArgumentParser object
     add_args(parser)
 
     # Parse the arguments and modify the current path
-    new_path: str = parse_args_and_modify_path_str(parser, current_path_value)
+    new_path: str = parse_args_and_modify_path_str(parser, old_path_value)
 
-    # Print the current state
-    if new_path == FOUND_MSG or new_path == NOT_FOUND_MSG:
-        if new_path == FOUND_MSG:
-            print('\n' + BOLD_STYLE + GREEN_STYLE + new_path + END_STYLE)
-        else:
-            print('\n' + BOLD_STYLE + RED_STYLE + new_path + END_STYLE)
-        print_msg("Current 'PATH'", current_path_value)
-    elif (current_path_value == new_path):
-        print_msg("Current 'PATH'", current_path_value)
-    else:
-        # TODO: Modify os.environ["PATH"] to hold the new clean value
-        ...
-        print_msg("Old 'PATH'", current_path_value)
-        print_msg("New 'PATH'", new_path)
+    # PATH modifications flag
+    is_path_modified = False
+
+    # Print information to the user
+    if new_path == FOUND_MSG:
+        print('\n' + BOLD_STYLE + GREEN_STYLE + new_path + END_STYLE)
+        new_path = old_path_value
+    elif new_path == NOT_FOUND_MSG:
+        print('\n' + BOLD_STYLE + RED_STYLE + new_path + END_STYLE)
+        new_path = old_path_value
+    elif new_path != old_path_value:
+        """ # Modify os.environ["PATH"] to hold the new clean value
+        os.environ["PATH"] = new_path """
+        new_path = path_duplicates_eliminator(new_path)
+        update_path(new_path)
+        is_path_modified = True
+        print_msg("Old 'PATH'", old_path_value)
+
+    # Print the current PATH value
+    """ print_msg("Current 'PATH'", os.environ["PATH"]) """
+    print_msg("Current 'PATH'", new_path)
+
+    # Suggest source command
+    if is_path_modified:
+        print_msg("Needed Command",
+                  "Run 'source ~/.bash_profile' to apply the changes to the current session.")
+
+
+def get_path() -> str:
+    """A simple function to get the current PATH
+
+    Get the current PATH environment variable
+    using the command meant for that 
+    depending on the kind of the operating system that pathvar running on.
+
+    :return: The value of the PATH variable
+    :rtype: str
+    """
+
+    path = "__%NO_PATH%__"
+
+    # UNIX
+    if PATH_SEP == ':':
+        process = run("echo $PATH", shell=True,
+                      stdout=PIPE, stderr=PIPE, text=True)
+        if process.stderr:
+            print_msg(RED_STYLE + "STDERR", process.stderr)
+            return path
+        path = process.stdout.strip()
+
+    # WINDOWS
+    if PATH_SEP == ';':
+        process = run("echo %PATH%", shell=True,
+                      stdout=PIPE, stderr=PIPE, text=True)
+        if process.stderr:
+            print_msg(RED_STYLE + "STDERR", process.stderr)
+            return path
+        path = process.stdout.strip()
+
+    return path
+
+
+def run_command_verbosely(cmd: str) -> None:
+    """Run a given command in subprocess
+
+    Run the given command in subprocess 
+    and print and 'stdout' or 'stderr'
+
+    :param cmd: Command to run
+    :type cmd: str
+    """
+
+    # Run the commands and print any stdout or stderr
+    process = run(
+        cmd,
+        shell=True, stdout=PIPE, stderr=PIPE, text=True
+    )
+    if process.stdout:
+        print_msg(GREEN_STYLE + "STDOUT", process.stdout)
+    if process.stderr:
+        print_msg(RED_STYLE + "STDERR", process.stderr)
+
+    return None
+
+
+def update_path(new_path_value: str) -> None:
+    """Run a command to update the PATH variable
+
+    Run the needed commands for updating the PATH environment variable
+    based on the current operating system and print any 'stdout' or 'stderr'
+
+    :param new_path_value: The new value in order to set the PATH variable to it
+    :type new_path_value: str
+    """
+
+    # UNIX
+    if PATH_SEP == ':':
+        # Make sure that there is ~/.bash_profile file
+        if not os.path.exists(USER_BASH_PROFILE_PATH):
+            run_command_verbosely("touch " + USER_BASH_PROFILE_PATH)
+
+        # Move the current .bash_profile into temp state
+        run_command_verbosely("mv " +
+                              USER_BASH_PROFILE_PATH + ' ' +
+                              USER_BASH_PROFILE_PATH + "__~")
+
+        # Program signature
+        prog_sig_start: str = "# PATHVAR *** RESULT *** START\n"
+        prog_sig_end: str = "# PATHVAR *** RESULT *** END\n"
+
+        # Add new ~/.bash_profile file and copy everything except old result
+        with open(USER_BASH_PROFILE_PATH + "__~") as tmp_f:
+            with open(USER_BASH_PROFILE_PATH, 'w') as f:
+                is_prog_seg_start: bool = False
+                is_prog_seg_end: bool = False
+                for line in tmp_f:
+                    if line == prog_sig_start:
+                        is_prog_seg_start = True
+                    elif line == prog_sig_end:
+                        is_prog_seg_start = False
+                        is_prog_seg_end = True
+                        continue
+                    if not is_prog_seg_start or is_prog_seg_end:
+                        f.write(line)
+                f.write(prog_sig_start)
+                f.write('export PATH="' + new_path_value + '"\n')
+                f.write(prog_sig_end)
+
+        # Delete the temp state of the ~/.bash_profile
+        run_command_verbosely("rm -f " + USER_BASH_PROFILE_PATH + "__~")
+
+        return None
+
+    # WINDOWS
+    elif PATH_SEP == ';':
+        if len(new_path_value) > 1024:
+            print('\n' + BOLD_STYLE + RED_STYLE +
+                  "WARNING: The new PATH value is more than 1024 characters, \
+                    so it will be truncated!" + END_STYLE)
+            print('\n' + BOLD_STYLE +
+                  "Hint: don't continue and \
+                    try first to delete some values using -d." + END_STYLE)
+            while True:
+                ans = input("Do you want to continue any way [y/n]? ")
+                if ans.strip().lower() in ('y', "yes"):
+                    break
+                elif ans.strip().lower() in ('n', "no"):
+                    return None
+            # Set the PATH for this session
+            run_command_verbosely("set PATH=" + new_path_value)
+            # Set the PATH globally
+            run_command_verbosely("setx PATH " + new_path_value)
+
+    return None
 
 
 def add_args(parser_obj: ArgumentParser) -> None:
@@ -73,29 +236,30 @@ def add_args(parser_obj: ArgumentParser) -> None:
     parser_obj.add_argument(
         "-e", "--eliminate-duplicates",
         action="store_true",
-        help="eliminates any duplicates in the value of the 'PATH'"
+        help="eliminates any duplicates in the value of the 'PATH' \
+            (Included with any modifications)"
     )
     parser_obj.add_argument(
         "-a", "--append",
         metavar='',
-        help="appends any number of paths \
+        help=f"appends any number of paths \
             to the current value of the 'PATH' \
-                (which are must be given as a single string separated with ':' \
+                (which are must be given as a single string separated with '{PATH_SEP}' \
                     between every two paths and without any spaces)"
     )
     parser_obj.add_argument(
         "-p", "--push",
         metavar='',
-        help="pushes any number of paths at the beginning \
+        help=f"pushes any number of paths at the beginning \
             of the current value of 'PATH' \
-                (which are must be given as a single string separated with ':' \
+                (which are must be given as a single string separated with '{PATH_SEP}' \
                     between every two paths and without any spaces)"
     )
     parser_obj.add_argument(
         "-d", "--delete",
         metavar='',
-        help="deletes from 'PATH' any number of paths \
-            (which are must be given as a single string separated with ':' \
+        help=f"deletes from 'PATH' any number of paths \
+            (which are must be given as a single string separated with '{PATH_SEP}' \
                 between every two paths and without any spaces)"
     )
     parser_obj.add_argument(
@@ -139,11 +303,11 @@ def parse_args_and_modify_path_str(
 
     if args.append:
         # Append the given paths to the current path
-        current_path += ':' + args.append.strip().strip(':')
+        current_path += PATH_SEP + args.append.strip().strip(PATH_SEP)
 
     if args.push:
         # Push the given paths at the beginning of the current path
-        current_path = args.push.strip().strip(':') + ':' + current_path
+        current_path = args.push.strip().strip(PATH_SEP) + PATH_SEP + current_path
 
     if args.delete:
         new_path = path_remover(current_path, args.delete)
@@ -164,9 +328,9 @@ def parse_args_and_modify_path_str(
             ans: str = input(
                 "Are you sure you want to continue [y|n]? "
             )
-            if ans.lower() in ('y', 'yes'):
+            if ans.strip().lower() in ('y', 'yes'):
                 return ''
-            elif ans.lower() in ('n', 'no'):
+            elif ans.strip().lower() in ('n', 'no'):
                 break
 
     # return the current_path with or without any modifications
@@ -177,7 +341,7 @@ def path_duplicates_eliminator(s: str) -> str:
     """Remove any duplicates in a PATH variable
 
     This function removes any duplicated paths from a PATH variable.
-    It looks for duplicates in the paths based on the ':' colon separator.
+    It looks for duplicated paths.
 
     :param s: The value of the PATH environment variable
     :type s: str
@@ -185,8 +349,8 @@ def path_duplicates_eliminator(s: str) -> str:
     :rtype: str
     """
 
-    # Split on ':'
-    ss: list[str] = s.split(':')
+    # Split on PATH_SEP
+    ss: list[str] = s.split(PATH_SEP)
     # Store only the unique paths
     temp_ss: list[str] = []
 
@@ -194,8 +358,8 @@ def path_duplicates_eliminator(s: str) -> str:
         if p not in temp_ss:
             temp_ss.append(p)
 
-    # Return concatenated string on ':' from the final list
-    return ':'.join(temp_ss)
+    # Return concatenated string on PATH_SEP from the final list
+    return PATH_SEP.join(temp_ss)
 
 
 def path_remover(current_path: str, given_paths: str) -> str:
@@ -212,8 +376,9 @@ def path_remover(current_path: str, given_paths: str) -> str:
     :rtype: str
     """
 
-    paths_to_remove: list[str] = given_paths.strip().strip(':').split(':')
-    paths: list[str] = current_path.split(':')
+    paths_to_remove: list[str] = given_paths.strip().strip(
+        PATH_SEP).split(PATH_SEP)
+    paths: list[str] = current_path.split(PATH_SEP)
 
     for path in paths_to_remove:
         try:
@@ -221,7 +386,7 @@ def path_remover(current_path: str, given_paths: str) -> str:
         except ValueError:
             continue
 
-    return ':'.join(paths)
+    return PATH_SEP.join(paths)
 
 
 def is_there_path(current_path: str, given_path: str) -> bool:
@@ -238,7 +403,7 @@ def is_there_path(current_path: str, given_path: str) -> bool:
     :rtype: bool
     """
 
-    for path in current_path.split(':'):
+    for path in current_path.split(PATH_SEP):
         if given_path == path:
             return True
     return False
