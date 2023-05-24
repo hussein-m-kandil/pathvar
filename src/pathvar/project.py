@@ -245,7 +245,18 @@ def is_there_path(current_path: str, given_path: str) -> bool:
 
 
 def print_msg(title: str, msg: str) -> None:
-    # TODO: DOCSTRING!!
+    """Print message to the user
+
+    This function will print a message to the user
+    in form of message title and message body
+
+    :param title: The title of the message
+    :type title: str
+    :param msg: The body of the message
+    :type msg: str
+    :return: Nothing, just the print side effect
+    :rtype: None
+    """
     print()
     print(BOLD_STYLE + title + ': ' + END_STYLE)
     print('_' * 28 + '\n')

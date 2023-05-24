@@ -12,3 +12,35 @@ def test_str_duplicates_elimination():
     assert path_duplicates_eliminator(inp) == out
     assert path_duplicates_eliminator(out) == out
     assert path_duplicates_eliminator('') == ''
+
+
+def test_path_remover():
+    assert path_remover(
+        "foo/foo:bar/bar:baz/baz",
+        "bar/bar"
+    ) == "foo/foo:baz/baz"
+    assert path_remover("foo/foo", "foo/foo") == ""
+    assert path_remover("foo/foo", "bar/bar") == "foo/foo"
+    assert path_remover(
+        "foo/foo:bar/bar:baz/baz",
+        "baz/baz"
+    ) == "foo/foo:bar/bar"
+
+
+def test_is_there_path():
+    assert is_there_path(
+        "foo/foo:/bar/bar:baz/baz",
+        "baz/baz"
+    ) == True
+    assert is_there_path(
+        "foo/foo:/bar/bar:baz/baz",
+        "foo/foo"
+    ) == True
+    assert is_there_path(
+        "foo/foo:/bar/bar:baz/baz",
+        "baz/baz:foo/foo"
+    ) == False
+    assert is_there_path(
+        "foo/foo:/bar/bar:baz/baz",
+        "foo/baz"
+    ) == False
