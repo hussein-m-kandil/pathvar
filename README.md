@@ -3,10 +3,14 @@
 ### Video Demo:  <URL HERE>
 ### Description:
 
+My final project for **CS50P**: "*CS50 Introduction to Programming with Python*".
+
 This tool meant to facilitate the interaction with the system's PATH environment variable (Linux BASH shell only).
 
-To get the work done correctly do the following: Read the 'help' instruction well, Be careful about the paths you input
-(with some options), and Separate between multiple paths with a single ' : '.
+- To get the work done correctly do the following: 
+    * Read the 'help' instruction well 
+    * Be careful about the paths you input (with some options) 
+    * Separate between multiple paths with a single colon ':'
 
 ---
 
@@ -41,53 +45,53 @@ To get the work done correctly do the following: Read the 'help' instruction wel
 ---
 
 ### Code design:
-*The design of the entire program is functional Programming Design and all application logic included in one file 'project.py'.*
+*The entire program is designed using the Functional Programming Paradigm and all application's logic included in one file: 'project.py'.*
 
 ### Code documentation:
 
 #### Contents:
 
-* [pathvar.project module](#module-pathvar.project)
+* [pathvar.project module](#pathvarproject-module)
 
 
-    * [`add_args()`](#pathvar.project.add_args)
+    * [`add_args()`](#pathvarprojectadd_argsparser_obj-argumentparser)
 
 
-    * [`get_path()`](#pathvar.project.get_path)
+    * [`get_path()`](#pathvarprojectget_path)
 
 
-    * [`is_there_path()`](#pathvar.project.is_there_path)
+    * [`is_there_path()`](#pathvarprojectis_there_pathcurrent_path-str-given_path-str)
 
 
-    * [`main()`](#pathvar.project.main)
+    * [`main()`](#pathvarprojectmain)
 
 
-    * [`parse_args_and_modify_path_str()`](#pathvar.project.parse_args_and_modify_path_str)
+    * [`parse_args_and_modify_path_str()`](#pathvarprojectparse_args_and_modify_path_strparser_obj-argumentparser-current_path-str)
 
 
-    * [`path_duplicates_eliminator()`](#pathvar.project.path_duplicates_eliminator)
+    * [`path_duplicates_eliminator()`](#pathvarprojectpath_duplicates_eliminators-str)
 
 
-    * [`path_remover()`](#pathvar.project.path_remover)
+    * [`path_remover()`](#pathvarprojectpath_removercurrent_path-str-given_paths-str)
 
 
-    * [`print_msg()`](#pathvar.project.print_msg)
+    * [`print_msg()`](#pathvarprojectprint_msgtitle-str-msg-str)
 
 
-    * [`run_command_verbosely()`](#pathvar.project.run_command_verbosely)
+    * [`run_command_verbosely()`](#pathvarprojectrun_command_verboselycmd-str)
 
 
-    * [`update_path()`](#pathvar.project.update_path)
+    * [`update_path()`](#pathvarprojectupdate_pathnew_path_value-str)
 
 ### pathvar.project module
 
 #### pathvar.project.add_args(parser_obj: ArgumentParser)
-Adding CL arguments to and ArgumentParser object
+*Adding CL arguments to and ArgumentParser object*
 
-Manipulate the inputted ArgumentParser object 
+*Manipulate the inputted ArgumentParser object 
 by adding the needed command line arguments to it
 with all the specifications for each of the arguments
-(i.e. argument name, action, help, …).
+(i.e. argument name, action, help, …).*
 
 
 * **Parameters**
@@ -106,11 +110,11 @@ with all the specifications for each of the arguments
 
 
 #### pathvar.project.get_path()
-A simple function to get the current PATH
+*A simple function to get the current PATH*
 
-Get the current PATH environment variable
+*Get the current PATH environment variable
 using the command meant for that 
-depending on the kind of the operating system that pathvar running on.
+depending on the kind of the operating system that pathvar running on.*
 
 * **Returns**
 
@@ -123,10 +127,10 @@ depending on the kind of the operating system that pathvar running on.
 
 
 #### pathvar.project.is_there_path(current_path: str, given_path: str)
-Check whether the ‘given_path’ is in ‘current_path’
+*Check whether the ‘given_path’ is in ‘current_path’*
 
-Return True if the ‘given_path’ is in ‘current_path’
-Otherwise, return false.
+*Return True if the ‘given_path’ is in ‘current_path’
+Otherwise, return false.*
 
 
 * **Parameters**
@@ -151,9 +155,9 @@ Otherwise, return false.
 
 
 #### pathvar.project.main()
-pathvar main function
+*pathvar main function*
 
-The Logic of the entire ‘pathvar’ program.
+*The Logic of the entire ‘pathvar’ program.*
 
 
 * **Returns**
@@ -168,10 +172,10 @@ The Logic of the entire ‘pathvar’ program.
 
 
 #### pathvar.project.parse_args_and_modify_path_str(parser_obj: ArgumentParser, current_path: str)
-Parsing the command line arguments
+*Parsing the command line arguments*
 
-Using ‘argparse’ library this function will consume an ‘ArgumentParser’ object
-in order to parse the arguments and handle the chosen option/s.
+*Using ‘argparse’ library this function will consume an ‘ArgumentParser’ object
+in order to parse the arguments and handle the chosen option/s.*
 
 
 * **Parameters**
@@ -193,10 +197,10 @@ in order to parse the arguments and handle the chosen option/s.
 
 
 #### pathvar.project.path_duplicates_eliminator(s: str)
-Remove any duplicates in a PATH variable
+*Remove any duplicates in a PATH variable*
 
-This function removes any duplicated paths from a PATH variable.
-It looks for duplicated paths.
+*This function removes any duplicated paths from a PATH variable.
+It looks for duplicated paths.*
 
 
 * **Parameters**
@@ -217,10 +221,10 @@ It looks for duplicated paths.
 
 
 #### pathvar.project.path_remover(current_path: str, given_paths: str)
-Delete the given path/s from the current PATH
+*Delete the given path/s from the current PATH*
 
-return copy of the ‘current_path’ 
-without and value included in the ‘given_paths’
+*return copy of the ‘current_path’ 
+without and value included in the ‘given_paths’*
 
 
 * **Parameters**
@@ -245,10 +249,10 @@ without and value included in the ‘given_paths’
 
 
 #### pathvar.project.print_msg(title: str, msg: str)
-Print message to the user
+*Print message to the user*
 
-This function will print a message to the user
-in form of message title and message body
+*This function will print a message to the user
+in form of message title and message body*
 
 
 * **Parameters**
@@ -273,10 +277,10 @@ in form of message title and message body
 
 
 #### pathvar.project.run_command_verbosely(cmd: str)
-Run a given command in subprocess
+*Run a given command in subprocess*
 
-Run the given command in subprocess 
-and print and ‘stdout’ or ‘stderr’
+*Run the given command in subprocess 
+and print and ‘stdout’ or ‘stderr’*
 
 
 * **Parameters**
@@ -285,10 +289,10 @@ and print and ‘stdout’ or ‘stderr’
 
 
 #### pathvar.project.update_path(new_path_value: str)
-Run a command to update the PATH variable
+*Run a command to update the PATH variable*
 
-Run the needed commands for updating the PATH environment variable
-based on the current operating system and print any ‘stdout’ or ‘stderr’
+*Run the needed commands for updating the PATH environment variable
+based on the current operating system and print any ‘stdout’ or ‘stderr’*
 
 
 * **Parameters**
