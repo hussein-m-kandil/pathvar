@@ -16,35 +16,23 @@ END_STYLE = "\033[0m"
 
 
 def main() -> None:
+    """pathvar main function
+
+    The Logic of the entire 'pathvar' program.
+
+    :return: Nothing, just execute the logic of the entire program.
+    :rtype: None
+    """
 
     # Get PATH
     old_path_value: str = get_path()
     if old_path_value == "__%NO_PATH%__":
         exit("Failure: Couldn't get PATH variable")
 
-    """ # Try to get the PATH in place holder for the current path
-    try:
-        old_path_value: str = os.environ["PATH"]
-    except KeyError:
-        print('\n' + BOLD_STYLE + RED_STYLE +
-              "PATH variable is not exist!" + END_STYLE)
-        while True:
-            ans = input("Do you want to set a new PATH variable [y|n]? ")
-            if ans.strip().lower() in ('y', "yes"):
-                os.environ.setdefault("PATH", '')
-                old_path_value: str = os.environ["PATH"]
-                print('\n' + BOLD_STYLE + GREEN_STYLE +
-                      "New PATH variable is available." + END_STYLE)
-                print('\n' + BOLD_STYLE +
-                      "Use -a or -p to insert new paths." + END_STYLE)
-                break
-            elif ans.strip().lower() in ('n', "no"):
-                exit() """
-
     # Create argument parser
     parser: ArgumentParser = ArgumentParser(
         description=f"This tool meant to facilitate the interaction \
-                with the system's PATH environment variable. \
+                with the system's PATH environment variable (Linux BASH shell only). \
                     To get the work done correctly do the following: \
                         Read the 'help' instruction well, \n\
                         Be careful about the paths you input (with some options), \n\
@@ -68,19 +56,17 @@ def main() -> None:
         print('\n' + BOLD_STYLE + RED_STYLE + new_path + END_STYLE)
         new_path = old_path_value
     elif new_path != old_path_value:
-        """ # Modify os.environ["PATH"] to hold the new clean value
-        os.environ["PATH"] = new_path """
+        # Update the old PATH
         new_path = path_duplicates_eliminator(new_path)
         update_path(new_path)
         is_path_modified = True
         print_msg("Old 'PATH'", old_path_value)
 
     # Print the current PATH value
-    """ print_msg("Current 'PATH'", os.environ["PATH"]) """
     print_msg("Current 'PATH'", new_path)
 
-    # Suggest source command
-    if is_path_modified:
+    # Suggest source command if the PATH IS modified and not on windows
+    if is_path_modified and PATH_SEP != ';':
         print_msg("Needed Command",
                   "Run 'source ~/.bash_profile' to apply the changes to the current session.")
 
@@ -101,15 +87,6 @@ def get_path() -> str:
     # UNIX
     if PATH_SEP == ':':
         process = run("echo $PATH", shell=True,
-                      stdout=PIPE, stderr=PIPE, text=True)
-        if process.stderr:
-            print_msg(RED_STYLE + "STDERR", process.stderr)
-            return path
-        path = process.stdout.strip()
-
-    # WINDOWS
-    if PATH_SEP == ';':
-        process = run("echo %PATH%", shell=True,
                       stdout=PIPE, stderr=PIPE, text=True)
         if process.stderr:
             print_msg(RED_STYLE + "STDERR", process.stderr)
@@ -163,52 +140,40 @@ def update_path(new_path_value: str) -> None:
                               USER_BASH_PROFILE_PATH + ' ' +
                               USER_BASH_PROFILE_PATH + "__~")
 
-        # Program signature
+        # Program signature to use it as a boundary for our result lines
         prog_sig_start: str = "# PATHVAR *** RESULT *** START\n"
         prog_sig_end: str = "# PATHVAR *** RESULT *** END\n"
 
         # Add new ~/.bash_profile file and copy everything except old result
         with open(USER_BASH_PROFILE_PATH + "__~") as tmp_f:
             with open(USER_BASH_PROFILE_PATH, 'w') as f:
+                # Sourcing the .bashrc & .profile if exist
+                f.write(prog_sig_start)
+                f.write("if [ -f ~/.bashrc ]; then\n    . ~/.bashrc\nfi\n")
+                f.write('\n')
+                f.write("if [ -f ~/.profile ]; then\n    . ~/.profile\nfi\n")
+                f.write(prog_sig_end)
+                # Flags to avoid copying our result lines again
                 is_prog_seg_start: bool = False
                 is_prog_seg_end: bool = False
+                # copy each line except for our old result lines
                 for line in tmp_f:
                     if line == prog_sig_start:
                         is_prog_seg_start = True
+                        is_prog_seg_end = False
                     elif line == prog_sig_end:
                         is_prog_seg_start = False
                         is_prog_seg_end = True
                         continue
                     if not is_prog_seg_start or is_prog_seg_end:
                         f.write(line)
+                # Adding the new PATH result lines
                 f.write(prog_sig_start)
                 f.write('export PATH="' + new_path_value + '"\n')
                 f.write(prog_sig_end)
 
         # Delete the temp state of the ~/.bash_profile
         run_command_verbosely("rm -f " + USER_BASH_PROFILE_PATH + "__~")
-
-        return None
-
-    # WINDOWS
-    elif PATH_SEP == ';':
-        if len(new_path_value) > 1024:
-            print('\n' + BOLD_STYLE + RED_STYLE +
-                  "WARNING: The new PATH value is more than 1024 characters, \
-                    so it will be truncated!" + END_STYLE)
-            print('\n' + BOLD_STYLE +
-                  "Hint: don't continue and \
-                    try first to delete some values using -d." + END_STYLE)
-            while True:
-                ans = input("Do you want to continue any way [y/n]? ")
-                if ans.strip().lower() in ('y', "yes"):
-                    break
-                elif ans.strip().lower() in ('n', "no"):
-                    return None
-            # Set the PATH for this session
-            run_command_verbosely("set PATH=" + new_path_value)
-            # Set the PATH globally
-            run_command_verbosely("setx PATH " + new_path_value)
 
     return None
 
@@ -303,14 +268,18 @@ def parse_args_and_modify_path_str(
 
     if args.append:
         # Append the given paths to the current path
-        current_path += PATH_SEP + args.append.strip().strip(PATH_SEP)
+        current_path += PATH_SEP + args.append.strip().strip(PATH_SEP).rstrip('/')
 
     if args.push:
         # Push the given paths at the beginning of the current path
-        current_path = args.push.strip().strip(PATH_SEP) + PATH_SEP + current_path
+        current_path = \
+            args.push.strip().strip(PATH_SEP).rstrip('/') + PATH_SEP + current_path
 
     if args.delete:
-        new_path = path_remover(current_path, args.delete)
+        new_path = path_remover(
+            current_path,
+            args.delete.strip().strip(PATH_SEP).rstrip('/')
+        )
         if current_path == new_path:
             return NOT_FOUND_MSG
         else:
@@ -318,7 +287,10 @@ def parse_args_and_modify_path_str(
 
     if args.query:
         # Return a message to inform the user about whether the given path is in PATH.
-        if is_there_path(current_path, args.query):
+        if is_there_path(
+            current_path,
+            args.query.strip().strip(PATH_SEP).rstrip('/')
+        ):
             return FOUND_MSG
         return NOT_FOUND_MSG
 
