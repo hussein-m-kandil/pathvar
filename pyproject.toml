@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pathvar"
-# version = "0.1.0"
-# description = "Interacting with PATH variable from Linux BASH command line."
+version = "1.0.0"
+description = "Interacting with PATH variable from Linux BASH command line."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -22,7 +22,7 @@ keywords = [
     "os",
 ]
 classifiers = ["Programming Language :: Python"]
-dynamic = ["version", "description", "optional-dependencies", "dependencies"]
+# dynamic = ["version"]
 
 [project.urls]
 Repository = "https://github.com/hussein-m-kandil/pathvar/"
