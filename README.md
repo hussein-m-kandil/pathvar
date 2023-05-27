@@ -1,9 +1,11 @@
 # pathvar
 
-### Video Demo:  <URL HERE>
+### Video Demo:  https://youtu.be/THzJUZlqiI0x
 ### Description:
 
 My final project for **CS50P**: "*CS50 Introduction to Programming with Python*".
+
+![Screenshot of the utility's help option output.](./assets/images/pathvar_screen.png)
 
 This tool meant to facilitate the interaction with the system's PATH environment variable (Linux BASH shell only).
 
@@ -11,6 +13,10 @@ This tool meant to facilitate the interaction with the system's PATH environment
     * Read the 'help' instruction well 
     * Be careful about the paths you input (with some options) 
     * Separate between multiple paths with a single colon ':'
+
+NOTE: This program saves the new modified PATH's value in '~/.bash_profile' file,
+and if this file not exists creates a new one, 
+and eventually source the '~/.bashrc' and '~/.profile' if any of them exists.
 
 ---
 
