@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pathvar"
-version = "1.0.0"
+version = "1.0.1"
 description = "Interacting with PATH variable from Linux BASH command line."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -395,6 +395,8 @@ def print_msg(title: str, msg: str) -> None:
     :rtype: None
     """
     print()
+    print(BOLD_STYLE + GREEN_STYLE + "Welcome to PATHVAR" + END_STYLE)
+    print()
     print(BOLD_STYLE + title + ': ' + END_STYLE)
     print('_' * 28 + '\n')
     print(msg)
