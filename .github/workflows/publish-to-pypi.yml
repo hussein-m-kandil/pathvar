@@ -1,0 +1,38 @@
+name: Publish Python distributions to PyPI
+
+on: push
+
+# .github/workflows/ci-cd.yml
+jobs:
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pathvar
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      
+    steps:
+    # retrieve your distributions here
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+          python-version: "3.x"
+
+    - name: Install pypa/build
+      run: >-
+          python3 -m pip install --upgrade build --user
+
+    - name: Install pypa/setuptools
+      run: >-
+          python3 -m pip install --upgrade setuptools --user
+
+    - name: Build a binary wheel and a source tarball
+      run: >-
+          python3 -m build
+
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
